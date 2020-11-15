@@ -1,1 +1,1 @@
-Here we store the log happen in our test.
+Here we store the log created by our test.
