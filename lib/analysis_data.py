@@ -2,9 +2,13 @@
 __author__ = 'hank'
 
 import os
+import json
 import pandas as pd
 import numpy as np
 import akshare as ak
+import sys
+sys.path.append("../")
+from lib.read_config import ReadConfig
 
 class AnalysisData(object):
     def __init__(self):
@@ -25,11 +29,20 @@ class AnalysisData(object):
         df = df.sort_values(by='date', ascending=True)
 
         # 均线数据
-        df['5'] = df.close.rolling(5).mean()
         df['10'] = df.close.rolling(10).mean()
+        df['60'] = df.close.rolling(60).mean()
+        df['250'] = df.close.rolling(250).mean()
 
         # 写入csv
-        file_name = self.csv_path + code + ".csv"
+        body_json = ReadConfig().read_json("code_list.json")
+        first_dict = body_json["first_team"]
+        second_dict = body_json["second_team"]
+        if code in first_dict:
+            file_name = self.csv_path + first_dict.get(code) + ".csv"
+        elif code in second_dict:
+            file_name = self.csv_path + second_dict.get(code) + ".csv"
+        else:
+            file_name = self.csv_path + code + ".csv"
         df.to_csv(file_name)
 
         return df
@@ -37,9 +50,17 @@ class AnalysisData(object):
     def get_data_from_csv(self, code):
         '''从csv文件获取数据'''
 
-        file_name = self.csv_path + code + ".csv"
+        body_json = ReadConfig().read_json("code_list.json")
+        first_dict = body_json["first_team"]
+        second_dict = body_json["second_team"]
+        if code in first_dict:
+            file_name = self.csv_path + first_dict.get(code) + ".csv"
+        elif code in second_dict:
+            file_name = self.csv_path + second_dict.get(code) + ".csv"
+        else:
+            file_name = self.csv_path + code + ".csv"
         df = pd.read_csv(file_name, header=0)
-        print(df.tail())
+        return df
 
 if __name__ == "__main__":
     AnalysisData().get_data_from_internet("sh601318")
